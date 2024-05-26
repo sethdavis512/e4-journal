@@ -1,0 +1,69 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id    String @id @default(uuid())
+    email String @unique
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    password Password?
+}
+
+model Password {
+    hash String
+
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    userId String @unique
+}
+
+model Entry {
+    id        String   @id @default(uuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    sentiment Sentiment
+    feelings  Feeling[]
+    comments  FeelingComment[]
+    content   String?
+}
+
+model Feeling {
+    id       String           @id @default(uuid())
+    type     FeelingType
+    slug     String
+    display  String
+    entries  Entry[]
+    comments FeelingComment[]
+}
+
+enum FeelingType {
+    POSITIVE
+    NEGATIVE
+}
+
+model FeelingComment {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    entry     Entry    @relation(fields: [entryId], references: [id], onDelete: Cascade)
+    entryId   String
+    feeling   Feeling  @relation(fields: [feelingId], references: [id], onDelete: Cascade)
+    feelingId String
+    comment   String
+}
+
+enum Sentiment {
+    VERY_POSITIVE
+    POSITIVE
+    NEUTRAL
+    NEGATIVE
+    VERY_NEGATIVE
+}
